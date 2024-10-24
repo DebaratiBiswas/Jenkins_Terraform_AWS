@@ -16,15 +16,15 @@ Ensure there are allow rules for inbound and outbound traffic on port 22 (SSH).
 
 9. Mobaxterm session established  
 10. [ec2-user@ip-172-31-31-122 ~]$       <------ this will be seen in xterm shell
-11. [ec2-user@ip-172-31-31-122 ~]$ **sudo yum update  **
+11. [ec2-user@ip-172-31-31-122 ~]$ **sudo yum update**
 Loaded plugins: extras_suggestions, langpacks, priorities, update-motd  
 amzn2-core                                                                                             | 3.6 kB  00:00:00    
 No packages marked for update  
-[ec2-user@ip-172-31-31-122 ~]$ ** sudo yum install -y yum-utils  **
+[ec2-user@ip-172-31-31-122 ~]$ **sudo yum install -y yum-utils**
 Loaded plugins: extras_suggestions, langpacks, priorities, update-motd  
 Package yum-utils-1.1.31-46.amzn2.0.1.noarch already installed and latest version  
 Nothing to do
-[ec2-user@ip-172-31-31-122 ~]$ **sudo yum-config-manager --add-repo http://rpm.releases.hashicorp.com/AmazonLinux/hashicorp.repo  **
+[ec2-user@ip-172-31-31-122 ~]$ **sudo yum-config-manager --add-repo http://rpm.releases.hashicorp.com/AmazonLinux/hashicorp.repo**
 Loaded plugins: extras_suggestions, langpacks, priorities, update-motd  
 adding repo from: http://rpm.releases.hashicorp.com/AmazonLinux/hashicorp.repo  
 grabbing file http://rpm.releases.hashicorp.com/AmazonLinux/hashicorp.repo to /etc/yum.repos.d/hashicorp.repo  
@@ -47,7 +47,7 @@ Dependency Installed:
 
 Complete!  
 Check if terraform is installed   
-[ec2-user@ip-172-31-31-122 ~]$ **terraform  **
+[ec2-user@ip-172-31-31-122 ~]$ **terraform**
 Usage: terraform [global options] <subcommand> [args]  
 
 The available commands for execution are listed below.  
@@ -57,7 +57,14 @@ less common or more advanced commands.
 Main commands:  
   init          Prepare your working directory for other commands  
   validate      Check whether the configuration is valid   
+  
+12. Set hostname:  [ec2-user@ip-172-31-31-122 ~]$ **sudo hostnamectl set-hostname Terraform-Server**
+13.  After changing hostname restart server using [ec2-user@ip-172-31-31-122 ~]$ **sudo init 6** now you will be able to see [ec2-user@terraform-server ~]$
 
+     **Setting up jenkins server using Terraform**
+15. Create s3 bucket so that we can store our state files remotely - ohio - project-register-terraform-server name - acls disabled - enable versioning - create
+16. Create a folder in server named jenkins so that we can store all terraform scripts related to jenkins in there. [ec2-user@terraform-server ~]$ **mkdir jenkins && cd jenkins**  
+17. 
 
 
 
