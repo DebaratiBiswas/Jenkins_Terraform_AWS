@@ -560,7 +560,28 @@ Dependency Installed:
   perl-Git.noarch 0:2.40.1-1.amzn2.0.3   perl-TermReadKey.x86_64 0:2.30-20.amzn2.0.2        
 
 Complete!             
-29. CREATE A TEST JOB         
+29. CREATE A TEST JOB as maven project  
+configure -> git scm -> url of git https://github.com/DebaratiBiswas/CICD_mvn_java.git -> ./main -> pom.xml in root with clean install as cmd -> apply -> save -> build now   
+
+30. Deploy ANSIBLE SERVER through Terraform server  
+mkdir ansible and paste all files of Ansible_Server  
+[ec2-user@terraform-server ~]$ **cd ansible**  
+[ec2-user@terraform-server ansible]$ ls  
+data.tf  main.tf  provider.tf  security.tf  variables.tf    
+data.tf     
+It looks like you're defining a data source to fetch the most recent Amazon Linux 2 AMI using Terraform.  
+Data Source:   
+
+data "aws_ami" "amazonlinux2" defines a data source to look up an Amazon Machine Image (AMI).  
+most_recent = true ensures that the most recent AMI matching the filters will be selected.  
+Filters:  
+
+The first filter matches AMIs that are owned by Amazon.  
+The second filter uses a wildcard to match the AMI name pattern for Amazon Linux 2.   
+1;06
+
+
+
 
 
 
