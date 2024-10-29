@@ -578,7 +578,231 @@ Filters:
 
 The first filter matches AMIs that are owned by Amazon.  
 The second filter uses a wildcard to match the AMI name pattern for Amazon Linux 2.   
-1;06
+
+main.tf  
+file defines an AWS EC2 instance resource for an Ansible server. References the fetched AMI, instance type, key name, and the security group.  
+
+provider.tf  
+required_version: Specifies the minimum version of Terraform required to run this configuration. The ~> operator means any version greater than or equal to 1.0.0 but less than 2.0.0.
+
+required_providers: Lists the providers needed for this configuration.
+
+aws: Specifies that the AWS provider from HashiCorp should be used.
+source: Indicates the source of the provider.
+version: Defines the version constraint for the AWS provider. Here, it means any version greater than or equal to 4.0.0 but less than 5.0.0. Specifying a version is good practice to ensure stability and compatibility, especially in production environments.
+backend "s3": Configures the backend for storing the Terraform state file.
+
+bucket: The S3 bucket where the state file will be stored.
+key: The path within the S3 bucket for the state file. This allows you to organize state files in a specific structure.
+region: The AWS region where the S3 bucket is located. This ensures that Terraform interacts with the correct bucket.  
+provider "aws": Configures the AWS provider with specific settings.
+region: Sets the AWS region where resources will be created. In this case, it is set to us-east-2.  
+
+security.tf - for setting security group with ingress egress rules  
+variables.tf - define variables to be used by tf  
+[ec2-user@terraform-server ansible]$ **terraform init**  
+Initializing the backend...  
+╷
+│ Error: Backend configuration changed  
+│
+│ A change in the backend configuration has been detected, which may require migrating existing state.  
+│
+│ If you wish to attempt automatic migration of the state, use "terraform init -migrate-state".  
+│ If you wish to store the current configuration with no changes to the state, use "terraform init   -reconfigure".    
+
+**The error is because there are lock file present which shows terraform was initialized before. So we will delete it.**  
+[ec2-user@terraform-server ansible]$ **ls -la**  
+total 24  
+drwxrwxr-x 3 ec2-user ec2-user  139 Oct 29 06:34 .  
+drwx------ 6 ec2-user ec2-user  161 Oct 29 06:34 ..  
+-rw-rw-r-- 1 ec2-user ec2-user  202 Oct 28 06:09 data.tf  
+-rw-rw-r-- 1 ec2-user ec2-user  295 Oct 29 05:53 main.tf  
+-rw-rw-r-- 1 ec2-user ec2-user  368 Oct 29 05:58 provider.tf  
+-rw-rw-r-- 1 ec2-user ec2-user  395 Oct 29 06:30 security.tf  
+drwxr-xr-x 3 ec2-user ec2-user   48 Oct 28 06:09 .terraform    
+-rw-r--r-- 1 ec2-user ec2-user 1406 Oct 28 06:09 .terraform.lock.hcl   
+-rw-rw-r-- 1 ec2-user ec2-user  518 Oct 28 06:09 variables.tf   
+[ec2-user@terraform-server ansible]$ rm -rf .terraform .terraform.lock.hcl   
+[ec2-user@terraform-server ansible]$ terraform init   
+Initializing the backend...    
+
+Successfully configured the backend "s3"! Terraform will automatically    
+use this backend unless the backend configuration changes.    
+Initializing provider plugins...   
+- Finding hashicorp/aws versions matching "~> 4.0"...   
+- Installing hashicorp/aws v4.67.0...     
+- Installed hashicorp/aws v4.67.0 (signed by HashiCorp)     
+Terraform has created a lock file .terraform.lock.hcl to record the provider    
+selections it made above. Include this file in your version control repository    
+so that Terraform can guarantee to make the same selections by default when     
+you run "terraform init" in the future.   
+
+Terraform has been successfully initialized!    
+
+You may now begin working with Terraform. Try running "terraform plan" to see
+any changes that are required for your infrastructure. All Terraform commands  
+shoul[ec2-user@terraform-server ansible]$ **terraform fmt**   
+[ec2-user@terraform-server ansible]$ **terraform validate**  
+Success! The configuration is valid.   
+
+[ec2-user@terraform-server ansible]$ terraform plan  
+data.aws_ami.amazonlinux2: Reading...        
+data.aws_ami.amazonlinux2: Read complete after 1s [id=ami-0e5be607c4ed9bc92]       
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the
+following symbols:
+  + create
+d now work.    
+
+If you ever set or change modules or backend configuration for Terraform,
+rerun this command to reinitialize your working directory. If you forget, other
+commands will detect it and remind you to do so if necessary.      
+Plan: 2 to add, 0 to change, 0 to destroy.  
+[ec2-user@terraform-server ansible]$ **terraform apply  --auto-approve**   
+data.aws_ami.amazonlinux2: Reading...
+data.aws_ami.amazonlinux2: Read complete after 1s [id=ami-0e5be607c4ed9bc92]
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the
+following symbols:
+  + create
+
+Terraform will perform the following actions:  
+
+  # aws_instance.AnsibleServer will be created      
+  + resource "aws_instance" "AnsibleServer" {  .......    
+
+
+Plan: 2 to add, 0 to change, 0 to destroy.   
+aws_security_group.web-traffic: Creating...       
+aws_security_group.web-traffic: Creation complete after 2s [id=sg-027d5ded60d353430]  
+aws_instance.AnsibleServer: Creating...    
+aws_instance.AnsibleServer: Still creating... [10s elapsed]    
+aws_instance.AnsibleServer: Creation complete after 12s [id=i-01f6b87799b84784a]   
+    
+Apply complete! Resources: 2 added, 0 changed, 0 destroyed.     
+
+31. Install and Configure Ansible  
+[ec2-user@ip-172-31-16-224 ~]$ **sudo hostnamectl set-hostname ansible-server**
+[root@ansible-server ec2-user]# **sudo su -**
+Last login: Tue Oct 29 06:49:47 UTC 2024 on pts/0  
+[root@ansible-server ~]#  
+[root@ansible-server ~]# **useradd ansadmin**
+[root@ansible-server ~]# **passwd ansadmin**
+Changing password for user ansadmin.  
+New password:    ## password
+BAD PASSWORD: The password fails the dictionary check - it is based on a dictionary word  
+Retype new password:  
+passwd: all authentication tokens updated successfully.  
+ADD USER TO SUDO   
+[root@ansible-server ~]# **visudo**   
+ansadmin ALL=(ALL)       NOPASSWD: ALL   
+[root@ansible-server ~]# **cd /etc/ssh**   
+[root@ansible-server ssh]# **ls -a**   
+.   moduli      sshd_config         ssh_host_ecdsa_key.pub  ssh_host_ed25519_key.pub  ssh_host_rsa_key.pub
+..  ssh_config  ssh_host_ecdsa_key  ssh_host_ed25519_key    ssh_host_rsa_key   
+[root@ansible-server ssh]# **vi sshd_config**   
+
+SET PASSWORD AUTHENTICATION TO YES  
+PasswordAuthentication yes  
+GET INTO ANSADMIN and GENERATE KEY SO IT COULKD MANAGE AKLL SEVER WITH THE USER  
+[root@ansible-server ssh]# **service sshd reload**
+Redirecting to /bin/systemctl reload sshd.service
+[root@ansible-server ssh]# **su ansadmin**
+[ansadmin@ansible-server ssh]$ **cd ~**  
+[ansadmin@ansible-server ~]$ **ssh-keygen**  
+Generating public/private rsa key pair.  
+Enter file in which to save the key (/home/ansadmin/.ssh/id_rsa):  
+Created directory '/home/ansadmin/.ssh'.  
+Enter passphrase (empty for no passphrase):  
+Enter same passphrase again:  
+Your identification has been saved in /home/ansadmin/.ssh/id_rsa.  
+Your public key has been saved in /home/ansadmin/.ssh/id_rsa.pub.    
+The key fingerprint is:    
+SHA256:wj9Yf8m5wjKmpJLRIlJPVzbDVqoglfYNq3IisYRwsI4 ansadmin@ansible-server   
+The key's randomart image is:   
++---[RSA 2048]----+
+|..  .. . ..      |
+|....o . B.       |
+|+..... B.o       |
+|=....o+..        |
+|E= + o+ S        |
+|= = =  = . . o   |
+|.o B  o o.. =    |
+|  o  o  +.o. .   |
+|   .. .o o ..    |
++----[SHA256]-----+
+[ansadmin@ansible-server ~]$   
+[ansadmin@ansible-server ~]$ **ls .ssh/**   
+id_rsa  id_rsa.pub   
+THESE ARE PRIVATE AND PUBLIC KEYS  
+32. INSTALL ANSIBLE  
+[ansadmin@ansible-server ~]$ **sudo su**    
+[root@ansible-server ansadmin]# **cd ~**   
+[root@ansible-server ~]# **amazon-linux-extras install ansible2**    
+[root@ansible-server ~]# **ansible --version**   
+ansible 2.9.23   
+  config file = /etc/ansible/ansible.cfg   
+  configured module search path = [u'/root/.ansible/plugins/modules', u'/usr/share/ansible/plugins/modules']     
+  ansible python module location = /usr/lib/python2.7/site-packages/ansible    
+  executable location = /bin/ansible              
+  python version = 2.7.18 (default, Dec 18 2023, 22:08:43) [GCC 7.3.1 20180712 (Red Hat 7.3.1-17)]   
+
+33. INTEGRATE ANSIBLE WITH JENKINS  
+open jenkins - manage jenkins - plugins - available plugins - publish over ssh - install   
+restart - login 
+manage jenkins - system - add ssh servers - name Ansible-Server - copy public ip of ansible server ec2 instance as hostname - username ansadmin - advanced pwd as password - apply - TEST CONFIG - save   
+34. 
+INSTALL DOCKER IN ANSIBLE SERVER   
+[ansadmin@ansible-server ec2-user]$ **cd /opt**  
+[ansadmin@ansible-server opt]$ **sudo mkdir docker**   
+[ansadmin@ansible-server opt]$ ls
+aws  docker  rh
+[ansadmin@ansible-server opt]$ ll
+total 0
+drwxr-xr-x 4 root root 33 Oct 14 20:16 aws
+**drwxr-xr-x 2 root root  6 Oct 29 07:40 docker**  
+drwxr-xr-x 2 root root  6 Aug 16  2018 rh   
+[ansadmin@ansible-server opt]$ **sudo chown ansadmin:ansadmin docker**  
+[ansadmin@ansible-server opt]$ ll  
+total 0   
+drwxr-xr-x 4 root     root     33 Oct 14 20:16 aws     
+**drwxr-xr-x 2 ansadmin ansadmin  6 Oct 29 07:40 docker**    
+drwxr-xr-x 2 root     root      6 Aug 16  2018 rh    
+go to test1 job - configure -  postbuild action - send build artifact over ssh - transfer set -  source fles - target/*.jar - remove prefix - target - Remote directory - apply save  
+Build the job - check for the jar files in the ansible-server
+
+[ansadmin@ansible-server opt]$ **date**  
+Tue Oct 29 07:58:38 UTC 2024  
+[ansadmin@ansible-server opt]$ **ls docker**  
+hello-world-maven-1.0.0.jar  original-hello-world-maven-1.0.0.jar   
+[ansadmin@ansible-server opt]$ **ll docker**  
+total 1152   
+-rw-rw-r-- 1 ansadmin ansadmin 587733 Oct 29 07:56 hello-world-maven-1.0.0.jar     
+-rw-rw-r-- 1 ansadmin ansadmin 587733 Oct 29 07:56 original-hello-world-maven-1.0.0.jar   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
 
 
 

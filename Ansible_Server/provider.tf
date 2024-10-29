@@ -9,7 +9,7 @@ terraform {
 
   backend "s3" {
     bucket         = "project-register-terraform-server"
-    key            = "jenkins/terraform.tfstate"
+    key            = "ansible/terraform.tfstate"
     region         = "us-east-2"
 
   }
