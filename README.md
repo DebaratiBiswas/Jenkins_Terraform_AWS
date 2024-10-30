@@ -560,7 +560,7 @@ Dependency Installed:
   perl-Git.noarch 0:2.40.1-1.amzn2.0.3   perl-TermReadKey.x86_64 0:2.30-20.amzn2.0.2        
 
 Complete!             
-29. CREATE A TEST JOB as maven project  
+29. CREATE A TEST1 JOB as maven project  
 configure -> git scm -> url of git https://github.com/DebaratiBiswas/CICD_mvn_java.git -> ./main -> pom.xml in root with clean install as cmd -> apply -> save -> build now   
 
 30. Deploy ANSIBLE SERVER through Terraform server  
@@ -779,6 +779,57 @@ hello-world-maven-1.0.0.jar  original-hello-world-maven-1.0.0.jar
 total 1152   
 -rw-rw-r-- 1 ansadmin ansadmin 587733 Oct 29 07:56 hello-world-maven-1.0.0.jar     
 -rw-rw-r-- 1 ansadmin ansadmin 587733 Oct 29 07:56 original-hello-world-maven-1.0.0.jar   
+
+DO THIS ACTIVITY WITH WEBAPP  
+hence create a new jenkins job for maven build with git repo https://github.com/DebaratiBiswas/maven_webapp  
+
+create maven-webapp job as maven project - configure -> git scm -> url of git https://github.com/DebaratiBiswas/maven_webapp.git -> ./main -> pom.xml in root with clean install as cmd -> apply -> save -> build now  
+
+ configure -  postbuild action - send build artifact over ssh - transfer set -  source fles - target/*.war - remove prefix - target - Remote directory //opt//docker - apply - test - save  
+Build the job - check for the jar files in the ansible-server
+[ec2-user@ansible-server ~]$ **date**   
+Wed Oct 30 06:20:24 UTC 2024  
+[ec2-user@ansible-server ~]$ **cd /opt/docker**  
+[ec2-user@ansible-server docker]$ **ll**  
+total 1156  
+-rw-rw-r-- 1 ansadmin ansadmin 587733 Oct 29 07:56 hello-world-maven-1.0.0.jar  
+**-rw-rw-r-- 1 ansadmin ansadmin   2098 Oct 30 06:20 java-hello-world.war**  
+-rw-rw-r-- 1 ansadmin ansadmin 587733 Oct 29 07:56 original-hello-world-maven-1.0.0.jar   
+CONFIGURE DOCKER IN ANSIBLE SERVER  
+35. [ec2-user@ansible-server docker]$ **sudo yum install docker**  
+
+Installed:  
+  docker.x86_64 0:25.0.6-1.amzn2.0.2  
+
+Dependency Installed:   
+  containerd.x86_64 0:1.7.22-1.amzn2.0.2        libcgroup.x86_64 0:0.41-21.amzn2        pigz.x86_64 0:2.3.4-1.amzn2.0.1
+  runc.x86_64 0:1.1.14-1.amzn2   
+
+Complete!   
+
+[ec2-user@ansible-server docker]$ **id ansadmin**   
+uid=1001(ansadmin) gid=1001(ansadmin) groups=1001(ansadmin)
+[ec2-user@ansible-server docker]$ **sudo usermod -aG docker ansadmin**  
+[ec2-user@ansible-server docker]$ **id ansadmin**  
+uid=1001(ansadmin) gid=1001(ansadmin) groups=1001(ansadmin),992(docker)  
+So, the command sudo usermod -aG docker ansadmin means:  
+
+Add the user ansadmin to the docker group while keeping their existing group memberships intact. This allows ansadmin to run Docker commands without needing elevated permissions (i.e., without using sudo).  
+[ec2-user@ansible-server docker]$ **sudo systemctl start docker**  
+[ec2-user@ansible-server docker]$ **docker ps**  
+permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock: Get "http://%2Fvar%2Frun%2Fdocker.sock/v1.44/containers/json": dial unix /var/run/docker.sock: connect: permission denied   
+[ec2-user@ansible-server docker]$ **sudo init 6**  
+[ec2-user@ansible-server ~]$ **sudo systemctl start docker**  
+[ec2-user@ansible-server ~]$ **sudo systemctl status docker**  
+● docker.service - Docker Application Container Engine
+   Loaded: loaded (/usr/lib/systemd/system/docker.service; disabled; vendor preset: disabled)
+   Active: **active** (running) since Wed 2024-10-30 06:34:14 UTC; 10s ago
+     Docs: https://docs.docker.com   
+
+
+
+
+
 
 
 
