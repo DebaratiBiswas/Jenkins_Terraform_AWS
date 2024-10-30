@@ -826,6 +826,26 @@ permission denied while trying to connect to the Docker daemon socket at unix://
    Active: **active** (running) since Wed 2024-10-30 06:34:14 UTC; 10s ago
      Docs: https://docs.docker.com   
 
+36. Create dockerfile in ansible server  
+[ec2-user@ansible-server ~]$ **sudo su - ansadmin**      
+Last login: Tue Oct 29 07:39:18 UTC 2024 on pts/1   
+Last failed login: Tue Oct 29 21:49:27 UTC 2024 from 202.4.115.172 on ssh:notty   
+There was 1 failed login attempt since the last successful login.   
+[ansadmin@ansible-server ~]$ **cd /opt/docker**   
+[ansadmin@ansible-server docker]$ ls   
+hello-world-maven-1.0.0.jar  java-hello-world.war  original-hello-world-maven-1.0.0.jar   
+[ansadmin@ansible-server docker]$ **vi Dockerfile**  
+[ansadmin@ansible-server docker]$ **cat Dockerfile**    
+FROM tomcat:latest   
+RUN cp -R /usr/local/tomcat/webapp.dist/* /usr/local/tomcat/webapps  
+COPY ./*.war /usr/local/tomcat/webapps/java-hello-world.war   
+[ansadmin@ansible-server docker]$ **ls**  
+Dockerfile  hello-world-maven-1.0.0.jar  java-hello-world.war  original-hello-world-maven-1.0.0.jar  
+
+37. CREATE ANSIBLE PLAYBOOK FOR DOCKER TASK   
+
+
+
 
 
 
