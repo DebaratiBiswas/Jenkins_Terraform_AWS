@@ -537,7 +537,7 @@ Default locale: en_US, platform encoding: UTF-8
 OS name: "linux", version: "4.14.352-268.569.amzn2.x86_64", arch: "amd64", family: "unix"  
 
 CONFIGURE JENKINS INTERFACE AND MAVEN INTEGRATION     
-28. gO TO THE PUBLIC IP OF Jenkis-Server ec2 instance add port http://3.12.196.76:8080/  
+28. gO TO THE PUBLIC IP OF Jenkis-Server ec2 instance add port http://3.12.196.76:8080/  MUST BE HTTP
 get initial password from /var/lib/jenkins/secrets/initialAdminPassword  
 [root@jenkins-server ~]# **cat /var/lib/jenkins/secrets/initialAdminPassword**  
 8319639b95014bd6a0fd8f9a8090add0     
@@ -842,63 +842,180 @@ COPY ./*.war /usr/local/tomcat/webapps/java-hello-world.war
 [ansadmin@ansible-server docker]$ **ls**  
 Dockerfile  hello-world-maven-1.0.0.jar  java-hello-world.war  original-hello-world-maven-1.0.0.jar  
 
-37. CREATE ANSIBLE PLAYBOOK FOR DOCKER TASK   
+37. CREATE ANSIBLE PLAYBOOK FOR DOCKER TASKS  
+[ansadmin@ansible-server docker]$ **ifconfig**  
+eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 9001  
+        inet 172.31.16.224  netmask 255.255.240.0  broadcast 172.31.31.255   <---check with private ip ansible server  
+        inet6 fe80::4aa:86ff:feb2:e5eb  prefixlen 64  scopeid 0x20<link>  
+        ether 06:aa:86:b2:e5:eb  txqueuelen 1000  (Ethernet)  
+        RX packets 12287  bytes 80627772 (76.8 MiB)  
+        RX errors 0  dropped 0  overruns 0  frame 0  
+        TX packets 3055  bytes 252039 (246.1 KiB)  
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0  
 
+lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536  
+        inet 127.0.0.1  netmask 255.0.0.0  
+        inet6 ::1  prefixlen 128  scopeid 0x10<host>  
+        loop  txqueuelen 1000  (Local Loopback)  
+        RX packets 0  bytes 0 (0.0 B)  
+        RX errors 0  dropped 0  overruns 0  frame 0   
+        TX packets 0  bytes 0 (0.0 B)   
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0   
+1:35 
+CREATE ANSIBLE HOST FILE  
+[ansadmin@ansible-server docker]$ **sudo vi /etc/ansible/hosts**  
+[ansadmin@ansible-server docker]$ **cat /etc/ansible/hosts**
+# This is the default ansible 'hosts' file.  
+#  
+# It should live in /etc/ansible/hosts    
+[ansible]  
+172.31.16.224   <------------ Private ip of the ansible server  
+Copy the ssh key   
+[ansadmin@ansible-server docker]$ ssh-copy-id 172.31.16.224   
+/usr/bin/ssh-copy-id: INFO: Source of key(s) to be installed: "/home/ansadmin/.ssh/id_rsa.pub"   
+The authenticity of host '172.31.16.224 (172.31.16.224)' can't be established.   
+ECDSA key fingerprint is SHA256:Zn83C/cRv2QqyiFn4WWKbTgxFjagHdJaaDHUyW/ojzA.   
+ECDSA key fingerprint is MD5:d9:01:d9:83:ee:e3:9e:f1:12:82:ff:9e:19:47:e9:ac.   
+Are you sure you want to continue connecting (yes/no)? yes    
+/usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed         
+/usr/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you are prompted now it is to install the new keys      
+ansadmin@172.31.16.224's password:         <-- password>
 
+Number of key(s) added: 1       
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+Now try logging into the machine, with:   "ssh '172.31.16.224'"   
+and check to make sure that only the key(s) you wanted were added.     
+MANIFEST FILE TO CREATE DOCKER IMAGE FROM APPLICATION  
+login to docker hub using gmail and password  
+[ansadmin@ansible-server docker]$ **ls**  
+Dockerfile  hello-world-maven-1.0.0.jar  java-hello-world.war  original-hello-world-maven-1.0.0.jar
+[ansadmin@ansible-server docker]$ **vi java-hello-world-ci.yml**     
+[ansadmin@ansible-server docker]$ **cat java-hello-world-ci.yml**  
+- hosts: ansible  
   
+  tasks:  
+  - name: create docker image  
+    command: docker build -t java-hello-word:latest .    
+    args:      
+      chdir: /opt/docker       
+       
+  - name: create tag to push image to dockerhub         
+    command: docker tag java-hello-word:latest debsss/java-hello-word:latest            
+                 
+  - name: push to docker hub          
+    command: docker push debsss/java-hello-word:latest           
+check playbook for errors  
+[ansadmin@ansible-server docker]$ **ansible-playbook java-hello-world-ci.yml --check**  
 
+PLAY [ansible] ***************************************************************************************************************        
 
+TASK [Gathering Facts] *******************************************************************************************************    
+[WARNING]: Platform linux on host 172.31.16.224 is using the discovered Python interpreter at /usr/bin/python, but future
+installation of another Python interpreter could change this. See
+https://docs.ansible.com/ansible/2.9/reference_appendices/interpreter_discovery.html for more information.     
+ok: [172.31.16.224]       
 
+TASK [create docker image] ***************************************************************************************************    
+skipping: [172.31.16.224]    
 
+TASK [create tag to push image to dockerhub] *********************************************************************************     
+skipping: [172.31.16.224]         
 
+TASK [push to docker hub] ****************************************************************************************************       
+skipping: [172.31.16.224]  
 
+PLAY RECAP*******************************************************************************************************************    
+172.31.16.224              : ok=1    changed=0    unreachable=0    failed=0    skipped=3    rescued=0    ignored=0        
 
+[ansadmin@ansible-server docker]$ **docker login -u debsss**   
+Password:     
+WARNING! Your password will be stored unencrypted in /home/ansadmin/.docker/config.json.
+Configure a credential helper to remove this warning. See
+https://docs.docker.com/engine/reference/commandline/login/#credentials-store      
 
+Login Succeeded       
 
+GOT ERROR WHILE RUNNING LAYBOOK . FOUND docker disabled. HENCE STARTED docker service and executed the play  
 
+[ansadmin@ansible-server docker]$ **ansible-playbook java-hello-world-ci.yml**     
 
+PLAY [ansible] ***************************************************************************************************************        
 
+TASK [Gathering Facts] *******************************************************************************************************
+[WARNING]: Platform linux on host 172.31.16.224 is using the discovered Python interpreter at /usr/bin/python, but future        
+installation of another Python interpreter could change this. See
+https://docs.ansible.com/ansible/2.9/reference_appendices/interpreter_discovery.html for more information.         
+ok: [172.31.16.224]      
 
+TASK [create docker image] ***************************************************************************************************     
+fatal: [172.31.16.224]: FAILED! => {"changed": true, "cmd": ["docker", "build", "-t", "java-hello-word:latest", "."], "delta": "0:00:00.135632", "end": "2024-11-04 08:18:21.643520", "msg": "non-zero return code", "rc": 1, "start": "2024-11-04 08:18:21.507888", "stderr": "ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?", "stderr_lines": ["ERROR: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?"], "stdout": "", "stdout_lines": []}      
 
+PLAY RECAP *******************************************************************************************************************      
+172.31.16.224              : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0         
 
+[ansadmin@ansible-server docker]$ **sudo systemctl status docker**       
+● docker.service - Docker Application Container Engine
+   Loaded: loaded (/usr/lib/systemd/system/docker.service; disabled; vendor preset: disabled)
+   Active: inactive (dead)
+     Docs: https://docs.docker.com   
 
+[ansadmin@ansible-server docker]$ **sudo systemctl start docker**      
+[ansadmin@ansible-server docker]$ **sudo systemctl status docker**    
+● docker.service - Docker Application Container Engine        
+   Loaded: loaded (/usr/lib/systemd/system/docker.service; disabled; vendor preset: disabled)    
+   Active: **active** (running) since Mon 2024-11-04 08:19:16 UTC; 8s ago    
+     Docs: https://docs.docker.com        
+  Process: 6889 ExecStartPre=/usr/libexec/docker/docker-setup-runtimes.sh (code=exited, status=0/SUCCESS)
+  Process: 6877 ExecStartPre=/bin/mkdir -p /run/docker (code=exited, status=0/SUCCESS)  
+ Main PID: 6896 (dockerd)
+    Tasks: 7
+   Memory: 110.6M
+   CGroup: /system.slice/docker.service
+           └─6896 /usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock --default-ulimit nofile=32768:6553...   
 
+Nov 04 08:19:06 ansible-server systemd[1]: Starting Docker Application Container Engine...    
+Nov 04 08:19:13 ansible-server dockerd[6896]: time="2024-11-04T08:19:13.673028907Z" level=info msg="Starting up"
+Nov 04 08:19:15 ansible-server dockerd[6896]: time="2024-11-04T08:19:15.163231479Z" level=info msg="[graphdriver] usin...lay2"
+Nov 04 08:19:15 ansible-server dockerd[6896]: time="2024-11-04T08:19:15.179329359Z" level=info msg="Loading containers...art."
+Nov 04 08:19:16 ansible-server dockerd[6896]: time="2024-11-04T08:19:16.122876219Z" level=info msg="Default bridge (do...ress"
+Nov 04 08:19:16 ansible-server dockerd[6896]: time="2024-11-04T08:19:16.185281828Z" level=info msg="Loading containers: done."
+Nov 04 08:19:16 ansible-server dockerd[6896]: time="2024-11-04T08:19:16.298709068Z" level=info msg="Docker daemon" com...5.0.6
+Nov 04 08:19:16 ansible-server dockerd[6896]: time="2024-11-04T08:19:16.319698581Z" level=info msg="Daemon has complet...tion"
+Nov 04 08:19:16 ansible-server dockerd[6896]: time="2024-11-04T08:19:16.521578861Z" level=info msg="API listen on /run...sock"    
+Nov 04 08:19:16 ansible-server systemd[1]: Started Docker Application Container Engine.      
+Hint: Some lines were ellipsized, use -l to show in full.        
+[ansadmin@ansible-server docker]$ **sudo usermod -aG docker ansadmin**    
+[ansadmin@ansible-server docker]$  
+CHANGED Dockerfile  
+[ansadmin@ansible-server docker]$ **cat Dockerfile**     
+FROM tomcat:latest    
+COPY ./*.war /usr/local/tomcat/webapps/java-hello-world.war   
+[ansadmin@ansible-server docker]$ **ansible-playbook java-hello-world-ci.yml**  
 
+PLAY [ansible] ***************************************************************************************************************       
 
+TASK [Gathering Facts] *******************************************************************************************************
+[WARNING]: Platform linux on host 172.31.16.224 is using the discovered Python interpreter at /usr/bin/python, but future
+installation of another Python interpreter could change this. See
+https://docs.ansible.com/ansible/2.9/reference_appendices/interpreter_discovery.html for more information.      
+ok: [172.31.16.224]    
 
+TASK [create docker image] ***************************************************************************************************
+changed: [172.31.16.224]      
 
+TASK [create tag to push image to dockerhub] *********************************************************************************
+changed: [172.31.16.224]      
+  
+TASK [push to docker hub] ****************************************************************************************************
+changed: [172.31.16.224]       
 
+PLAY RECAP *******************************************************************************************************************    
+172.31.16.224              : ok=4    changed=3    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0     
 
-
-
-
-
- 
-
-
+39. CREATE CONTINOUS INTEGRATION JOB  
+Same config of maven project job with 
+create maven_webapp_ci job as maven project - configure -> git scm -> url of git https://github.com/DebaratiBiswas/maven_webapp.git -> ./main -> pom.xml in root with clean install as cmd  configure -  postbuild action - send build artifact over ssh - transfer set -  source fles - target/*.war - remove prefix - target - Remote directory //opt//docker -> exec command in post build action as ansible-playbook /opt/docker/java-hello-world-ci.yml     
+execute and check dockerhub for latest pushed image  
 
 
 
