@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: java-helloworld-app
+  labels:
+     app: java-helloworld
+
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: java-helloworld
+
+  template:
+    metadata:
+      labels:
+        app: java-helloworld
+    spec:
+      containers:
+      - name: java-helloworld
+        image: debsss/java-hello-word
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1

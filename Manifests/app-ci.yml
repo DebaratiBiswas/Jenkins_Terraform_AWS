@@ -1,0 +1,14 @@
+- hosts: ansible
+
+  tasks:
+  - name: create docker image
+    command: docker build -t java-hello-word:latest .
+    args:
+      chdir: /opt/docker
+
+  - name: create tag to push image to dockerhub
+    command: docker tag java-hello-word:latest debsss/java-hello-word:latest
+
+  - name: push to docker hub
+    command: docker push debsss/java-hello-word:latest
+

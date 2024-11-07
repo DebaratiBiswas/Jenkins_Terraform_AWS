@@ -1021,7 +1021,7 @@ execute and check dockerhub for latest pushed image
 40. PROVISION EKS SERVER WITH TERRAFORM  
 Here is the output with double spaces and an extra line break after each line:
 
-```bash
+
 [ec2-user@terraform-server ~]$ ls  
 
 ansible  jenkins  
@@ -1198,7 +1198,7 @@ variable "egressrules" {
 
 41. Here is the output with double spaces and an extra line break after each line:
 
-```bash
+
 [ec2-user@terraform-server eks-server]$ terraform init  
 
 Initializing the backend...  
@@ -1562,6 +1562,262 @@ INSTALL EKSCTL
 [root@EKS-Server tmp]# **eksctl version**          
 0.194.0      
 [root@EKS-Server tmp]#    
+ATTACH IAM ROLES   
+select the ec2 instance eks-server - actions- secirity - modify iam roles- create new role - create role - aws sevrsive - usecase ec2 - permission policies amazon ec2 full access - next policy awscloud formationfullaccess - another policy IAMFULLACCESS - another ADMINISTRATORACCESS -name eks-role - create
+
+Npw update this role in eks-server instance  
+
+Provision eks cluster  
+[root@EKS-Server tmp]# **eksctl create cluster --name java-helloworld-cluster --region us-east-2 --node-type t2.small**
+2024-11-07 10:21:54 [ℹ]  eksctl version 0.194.0
+2024-11-07 10:21:54 [ℹ]  using region us-east-2
+2024-11-07 10:21:54 [ℹ]  setting availability zones to [us-east-2b us-east-2c us-east-2a]
+2024-11-07 10:21:54 [ℹ]  subnets for us-east-2b - public:192.168.0.0/19 private:192.168.96.0/19
+2024-11-07 10:21:54 [ℹ]  subnets for us-east-2c - public:192.168.32.0/19 private:192.168.128.0/19
+2024-11-07 10:21:54 [ℹ]  subnets for us-east-2a - public:192.168.64.0/19 private:192.168.160.0/19
+2024-11-07 10:21:54 [ℹ]  nodegroup "ng-76b41564" will use "" [AmazonLinux2/1.30]
+2024-11-07 10:21:54 [ℹ]  using Kubernetes version 1.30
+2024-11-07 10:21:54 [ℹ]  creating EKS cluster "java-helloworld-cluster" in "us-east-2" region with managed nodes
+2024-11-07 10:21:54 [ℹ]  will create 2 separate CloudFormation stacks for cluster itself and the initial managed nodegroup
+2024-11-07 10:21:54 [ℹ]  if you encounter any issues, check CloudFormation console or try 'eksctl utils describe-stacks --region=us-east-2 --cluster=java-helloworld-cluster'
+2024-11-07 10:21:54 [ℹ]  Kubernetes API endpoint access will use default of {publicAccess=true, privateAccess=false} for cluster "java-helloworld-cluster" in "us-east-2"
+2024-11-07 10:21:54 [ℹ]  CloudWatch logging will not be enabled for cluster "java-helloworld-cluster" in "us-east-2"
+2024-11-07 10:21:54 [ℹ]  you can enable it with 'eksctl utils update-cluster-logging --enable-types={SPECIFY-YOUR-LOG-TYPES-HERE (e.g. all)} --region=us-east-2 --cluster=java-helloworld-cluster'
+2024-11-07 10:21:54 [ℹ]  default addons coredns, vpc-cni, kube-proxy were not specified, will install them as EKS addons
+2024-11-07 10:21:54 [ℹ]
+2 sequential tasks: { create cluster control plane "java-helloworld-cluster",
+    2 sequential sub-tasks: {
+        2 sequential sub-tasks: {
+            1 task: { create addons },
+            wait for control plane to become ready,
+        },
+        create managed nodegroup "ng-76b41564",
+    }
+}
+2024-11-07 10:21:54 [ℹ]  building cluster stack "eksctl-java-helloworld-cluster-cluster"  
+2024-11-07 10:21:54 [ℹ]  deploying stack "eksctl-java-helloworld-cluster-cluster"  
+2024-11-07 10:22:24 [ℹ]  waiting for CloudFormation stack "eksctl-java-helloworld-cluster-cluster"  
+2024-11-07 10:28:55 [ℹ]  creating addon  
+2024-11-07 10:28:55 [ℹ]  successfully created addon   
+2024-11-07 10:28:56 [!]  recommended policies were found for "vpc-cni" addon, but since OIDC is disabled on the cluster, eksctl cannot configure the requested permissions; the recommended way to provide IAM permissions for "vpc-cni" addon is via pod identity associations; after addon creation is completed, add all recommended policies to the config file, under `addon.PodIdentityAssociations`, and run `eksctl update addon`  
+2024-11-07 10:28:56 [ℹ]  creating addon  
+2024-11-07 10:28:56 [ℹ]  successfully created addon     
+2024-11-07 10:28:56 [ℹ]  creating addon     
+2024-11-07 10:28:56 [ℹ]  successfully created addon  
+2024-11-07 10:30:57 [ℹ]  building managed nodegroup stack          "eksctl-java-helloworld-cluster-nodegroup-ng-76b41564"  
+2024-11-07 10:30:57 [ℹ]  deploying stack "eksctl-java-helloworld-cluster-nodegroup-ng-76b41564"  
+2024-11-07 10:30:57 [ℹ]  waiting for CloudFormation stack "eksctl-java-helloworld-cluster-nodegroup-ng-76b41564"    
+
+2024-11-07 10:34:43 [ℹ]  waiting for CloudFormation stack "eksctl-java-helloworld-cluster-nodegroup-ng-76b41564"    
+2024-11-07 10:34:43 [ℹ]  waiting for the control plane to become ready   
+2024-11-07 10:34:48 [!]  failed to determine authenticator version, leaving API version as default v1alpha1: failed to parse versions: unable to parse first version "": strconv.ParseUint: parsing "": invalid syntax   
+2024-11-07 10:34:48 [✔]  saved kubeconfig as "/root/.kube/config"      
+2024-11-07 10:34:48 [ℹ]  no tasks      
+2024-11-07 10:34:48 [✔]  all EKS cluster resources for "java-helloworld-cluster" have been created 
+2024-11-07 10:34:48 [✔]  created 0 nodegroup(s) in cluster "java-helloworld-cluster"    
+2024-11-07 10:34:48 [ℹ]  nodegroup "ng-76b41564" has 2 node(s)    
+2024-11-07 10:34:48 [ℹ]  node "ip-192-168-4-251.us-east-2.compute.internal" is ready   
+2024-11-07 10:34:48 [ℹ]  node "ip-192-168-74-247.us-east-2.compute.internal" is ready        
+2024-11-07 10:34:48 [ℹ]  waiting for at least 2 node(s) to become ready in "ng-76b41564"  
+2024-11-07 10:34:48 [ℹ]  nodegroup "ng-76b41564" has 2 node(s)    
+2024-11-07 10:34:48 [ℹ]  node "ip-192-168-4-251.us-east-2.compute.internal" is ready     
+2024-11-07 10:34:48 [ℹ]  node "ip-192-168-74-247.us-east-2.compute.internal" is ready    
+2024-11-07 10:34:48 [✔]  created 1 managed nodegroup(s) in cluster "java-helloworld-cluster"   
+2024-11-07 10:34:49 [✖]  getting Kubernetes version on EKS cluster: error running `kubectl version`: exit status 1 (check 'kubectl version')      
+2024-11-07 10:34:49 [ℹ]  cluster should be functional despite missing (or misconfigured) client binaries 
+2024-11-07 10:34:49 [✔]  EKS cluster "java-helloworld-cluster" in "us-east-2" region is ready    
+[root@EKS-Server tmp]# **sudo su -**
+Last login: Thu Nov  7 09:42:46 UTC 2024 on pts/0
+[root@EKS-Server ~]# **curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"**
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100 63.5M  100 63.5M    0     0   100M      0 --:--:-- --:--:-- --:--:--  100M
+[root@EKS-Server ~]# **unzip awscliv2.zip**   
+Archive:  awscliv2.zip   
+
+[root@EKS-Server ~]# sudo ./aws/install   
+You can now run: /usr/local/bin/aws --version    
+[root@EKS-Server ~]# aws --version   
+aws-cli/2.19.2 Python/3.12.6 Linux/4.14.353-270.569.amzn2.x86_64 exe/x86_64.amzn.2  
+CONNECT TO THE CLUSTER  
+[root@EKS-Server ~]# **aws eks update-kubeconfig --region us-east-2 --name java-helloworld-cluster**  
+Added new context arn:aws:eks:us-east-2:135808939583:cluster/java-helloworld-cluster to /root/.kube/config  
+[root@EKS-Server ~]# **kubectl get node**  
+NAME                                           STATUS   ROLES    AGE   VERSION  
+ip-192-168-4-251.us-east-2.compute.internal    Ready    <none>   13m   v1.30.4-eks-a737599  
+ip-192-168-74-247.us-east-2.compute.internal   Ready    <none>   13m   v1.30.4-eks-a737599   
+[root@EKS-Server ~]# **kubectl get pod**   
+No resources found in default namespace.        
+45. CREATE DPLOYMENT MANIFEST FILE  
+copy Manifests/myapp-deployment.yaml from this repo to server
+CREATE SERVICE  
+copy Manifests/myapp-service.yaml to server   
+[root@EKS-Server ~]# **vi java-helloworld-deployment.yaml**  
+[root@EKS-Server ~]# **vi java-helloworld-service.yaml**   
+46. INTEGRATE EKS SERVER WITH ANSIBLE  
+[root@EKS-Server ~]# **vi /etc/ssh/sshd_config**  
+set   
+PasswordAuthentication yes  
+to enabl authentication from ansiblke server set password for the root user 
+[root@EKS-Server ~]# **passwd root**   
+Changing password for user root.         
+New password:  
+BAD PASSWORD: The password fails the dictionary check - it is based on a dictionary word
+Retype new password:       <---password>
+passwd: all authentication tokens updated successfully.       
+
+
+[root@EKS-Server ~]# **service sshd reload**  
+Redirecting to /bin/systemctl reload sshd.service   
+get private ip of eks server  
+[root@EKS-Server ~]# **ifconfig**     
+eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 9001
+        inet 172.31.23.205  netmask 255.255.240.0  broadcast 172.31.31.255
+        inet6 fe80::4f7:9fff:febb:47c5  prefixlen 64  scopeid 0x20<link>
+        ether 06:f7:9f:bb:47:c5  txqueuelen 1000  (Ethernet)
+        RX packets 119643  bytes 164422891 (156.8 MiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 28002  bytes 3137339 (2.9 MiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
+        inet 127.0.0.1  netmask 255.0.0.0
+        inet6 ::1  prefixlen 128  scopeid 0x10<host>
+        loop  txqueuelen 1000  (Local Loopback)
+        RX packets 2  bytes 100 (100.0 B)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 2  bytes 100 (100.0 B)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+Check this ip in instance tooo  
+
+*************************
+Now get in to ansible server   
+[ec2-user@ansible-server ~]$ **sudo su - ansadmin**   
+Last login: Mon Nov  4 09:36:54 UTC 2024 from ip-172-31-16-224.us-east-2.compute.internal on pts/3
+[ansadmin@ansible-server ~]$
+[ansadmin@ansible-server ~]$ **sudo vi /etc/ansible/hosts**  
+
+# This is the default ansible 'hosts' file.
+#
+# It should live in /etc/ansible/hosts  
+[ansible]     
+172.31.16.224 
+
+[kubernetes]   
+172.31.23.205 
+[ansadmin@ansible-server ~]$ **ssh-copy-id root@3.128.153.236**  
+/usr/bin/ssh-copy-id: INFO: Source of key(s) to be installed: "/home/ansadmin/.ssh/id_rsa.pub"  
+The authenticity of host '3.128.153.236 (3.128.153.236)' can't be established.   
+ECDSA key fingerprint is SHA256:GMEObi3SFgZIJUgJFdFKhuklzRFIjghhNafYRuDtkUs.    
+ECDSA key fingerprint is MD5:79:c8:e9:d0:be:cd:de:38:86:e7:85:65:da:00:88:6e.   
+Are you sure you want to continue connecting (yes/no)? yes   
+/usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed      
+/usr/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you are prompted now it is to install the new keys       
+root@3.128.153.236's password:  password   
+
+Number of key(s) added: 1 
+
+Now try logging into the machine, with:   "ssh 'root@3.128.153.236'"    
+and check to make sure that only the key(s) you wanted were added.    
+create manifest for ansible paybook copy from Manifests/kebe_deploy.yml from repo to server
+[ansadmin@ansible-server ~]$ **vi kube_deploy.yml**  
+[ansadmin@ansible-server ~]$ **ansible-playbook kube_deploy.yml --check**   
+
+PLAY [kubernetes] ************************************************************************************************************
+
+TASK [Gathering Facts] *******************************************************************************************************
+The authenticity of host '172.31.23.205 (172.31.23.205)' can't be established.
+ECDSA key fingerprint is SHA256:GMEObi3SFgZIJUgJFdFKhuklzRFIjghhNafYRuDtkUs.
+ECDSA key fingerprint is MD5:79:c8:e9:d0:be:cd:de:38:86:e7:85:65:da:00:88:6e.
+Are you sure you want to continue connecting (yes/no)? yes
+[WARNING]: Platform linux on host 172.31.23.205 is using the discovered Python interpreter at /usr/bin/python, but future
+installation of another Python interpreter could change this. See
+https://docs.ansible.com/ansible/2.9/reference_appendices/interpreter_discovery.html for more information.
+ok: [172.31.23.205]
+
+TASK [deploy helloworld app on kubernetes] ***********************************************************************************
+skipping: [172.31.23.205]
+
+TASK [create service for helloworld app] *************************************************************************************
+skipping: [172.31.23.205]
+
+TASK [update deployment with new pods if image updated in docker hub] ********************************************************
+skipping: [172.31.23.205]
+
+PLAY RECAP *******************************************************************************************************************
+172.31.23.205              : ok=1    changed=0    unreachable=0    failed=0    skipped=3    rescued=0    ignored=0
+
+[ansadmin@ansible-server ~]$
+
+[ansadmin@ansible-server ~]$ **ansible-playbook kube_deploy.yml**   
+
+PLAY [kubernetes] ************************************************************************************************************ 
+
+TASK [Gathering Facts]  *******************************************************************************************************
+[WARNING]: Platform linux on host 172.31.23.205 is using the discovered Python interpreter at /usr/bin/python, but future
+installation of another Python interpreter could change this. See
+https://docs.ansible.com/ansible/2.9/reference_appendices/interpreter_discovery.html for more information.
+ok: [172.31.23.205]   
+
+TASK [deploy helloworld app on kubernetes] ***********************************************************************************
+changed: [172.31.23.205]     
+
+TASK [create service for helloworld app] *************************************************************************************
+changed: [172.31.23.205]       
+
+TASK [update deployment with new pods if image updated in docker hub] ********************************************************
+changed: [172.31.23.205]       
+
+PLAY RECAP *******************************************************************************************************************
+172.31.23.205              : ok=4    changed=3    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0       
+
+GO TO EKS SERVER AND CHECK STATUS
+[root@EKS-Server ~]# **kubectl get pods**     
+NAME                                  READY   STATUS    RESTARTS   AGE    
+java-helloworld-app-bc8546c7c-4h8kc   1/1     Running   0          112s    
+java-helloworld-app-bc8546c7c-gkxfs   1/1     Running   0          112s     
+[root@EKS-Server ~]# **kubectl get services**   
+NAME                      TYPE           CLUSTER-IP          EXTERNAL-IP                                                               PORT(S)          AGE    
+java-helloworld-service   LoadBalancer   10.100.60.153   a5ca29d03ef4146af95750c8cc1b44f0-1061023772.us-east-2.elb.amazonaws.com   8080:31530/TCP   2m3s        
+kubernetes                ClusterIP      10.100.0.1        <none>                                                                    443/TCP          65m        
+[root@EKS-Server ~]# **kubectl get deployment**      
+NAME                  READY   UP-TO-DATE   AVAILABLE   AGE          
+java-helloworld-app   2/2     2            2           2m16s        
+[root@EKS-Server ~]# **kubectl get replicaset**   
+NAME                             DESIRED   CURRENT   READY   AGE     
+java-helloworld-app-5b9c545846   0         0         0       10m   
+java-helloworld-app-bc8546c7c    2         2         2       10m    
+
+47. CREATE CONTINOUS DEPLOYMENT JOB ON JENKINS    
+copy kube_deploy.yml to /opt/docker
+[ansadmin@ansible-server docker]$ **cd /opt/docker**   
+[ansadmin@ansible-server docker]$ **ls**
+Dockerfile                   java-hello-world-ci.yml  kube_deploy.yml
+hello-world-maven-1.0.0.jar  java-hello-world.war     original-hello-world-maven-1.0.0.jar  
+In same mave_webapp_ci jenkins job below postaction sending image to dockerhub through ansible playbook. Add another transfer set and add only exec command as ansible-playbook /opt/docker/kube_deploy.yml  - apply - build now 
+Check for pod status in seconds   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

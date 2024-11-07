@@ -1,0 +1,12 @@
+- hosts: kubernetes
+  user: root
+
+  tasks:
+    - name: deploy helloworld app on kubernetes
+      command: kubectl apply -f java-helloworld-deployment.yaml
+
+    - name: create service for helloworld app
+      command: kubectl apply -f java-helloworld-service.yaml
+
+    - name: update deployment with new pods if image updated in docker hub
+      command: kubectl rollout restart deployment.apps/java-helloworld-app
