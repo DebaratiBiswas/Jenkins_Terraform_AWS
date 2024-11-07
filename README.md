@@ -1016,6 +1016,557 @@ PLAY RECAP *********************************************************************
 Same config of maven project job with 
 create maven_webapp_ci job as maven project - configure -> git scm -> url of git https://github.com/DebaratiBiswas/maven_webapp.git -> ./main -> pom.xml in root with clean install as cmd  configure -  postbuild action - send build artifact over ssh - transfer set -  source fles - target/*.war - remove prefix - target - Remote directory //opt//docker -> exec command in post build action as ansible-playbook /opt/docker/java-hello-world-ci.yml     
 execute and check dockerhub for latest pushed image  
+1:48
+
+40. PROVISION EKS SERVER WITH TERRAFORM  
+Here is the output with double spaces and an extra line break after each line:
+
+```bash
+[ec2-user@terraform-server ~]$ ls  
+
+ansible  jenkins  
+
+[ec2-user@terraform-server ~]$ cp -r ansible eks-server  
+
+[ec2-user@terraform-server ~]$ ls  
+
+ansible  eks-server  jenkins  
+
+[ec2-user@terraform-server ~]$ cd eks-server/  
+
+[ec2-user@terraform-server eks-server]$ ls  
+
+data.tf  main.tf  provider.tf  security.tf  variables.tf  
+
+[ec2-user@terraform-server eks-server]$ ls -a  
+
+.  ..  data.tf  main.tf  provider.tf  security.tf  .terraform  .terraform.lock.hcl  variables.tf  
+
+[ec2-user@terraform-server eks-server]$ rm -rf .terraform .terraform.lock.hcl  
+
+[ec2-user@terraform-server eks-server]$ ls -a  
+
+.  ..  data.tf  main.tf  provider.tf  security.tf  variables.tf  
+
+[ec2-user@terraform-server eks-server]$ vi main.tf  
+
+[ec2-user@terraform-server eks-server]$ cat main.tf  
+
+resource "aws_instance" "EKSServer" {  
+
+  ami                    = data.aws_ami.amazonlinux2.id  
+
+  instance_type          = var.my_instance_type  
+
+  key_name               = var.my_key  
+
+  vpc_security_group_ids = [aws_security_group.web-traffic.id]  
+
+  tags = {  
+
+    "Name" = "EKS-Server"  
+
+  }  
+
+}  
+
+[ec2-user@terraform-server eks-server]$ vi provider.tf  
+
+[ec2-user@terraform-server eks-server]$ cat provider.tf  
+
+terraform {  
+
+  required_version = "~> 1.0"  
+
+  required_providers {  
+
+    aws = {  
+
+      source  = "hashicorp/aws"  
+
+      version = "~> 4.0" # Optional but recommended in production  
+
+    }  
+
+  }  
+
+  backend "s3" {  
+
+    bucket = "project-register-terraform-server"  
+
+    key    = "eks-server/terraform.tfstate"  
+
+    region = "us-east-2"  
+
+  }  
+
+}  
+
+provider "aws" {  
+
+  region = "us-east-2"  
+
+}  
+
+[ec2-user@terraform-server eks-server]$ vi security.tf  
+
+[ec2-user@terraform-server eks-server]$ cat security.tf  
+
+# Create Security Group - SSH Traffic and other ports  
+
+resource "aws_security_group" "web-traffic" {  
+
+  name = "My_Security_Group3"  
+
+  ingress {  
+
+    from_port   = 0  
+
+    to_port     = 0  
+
+    protocol    = "-1"  
+
+    cidr_blocks = ["0.0.0.0/0"]  
+
+  }  
+
+  egress {  
+
+    from_port   = 0  
+
+    to_port     = 0  
+
+    protocol    = "-1"  
+
+    cidr_blocks = ["0.0.0.0/0"]  
+
+  }  
+
+  tags = {  
+
+    "Name" = "My_SG3"  
+
+  }  
+
+}  
+
+[ec2-user@terraform-server eks-server]$ vi variables.tf  
+
+[ec2-user@terraform-server eks-server]$ cat variables.tf  
+
+variable "region" {  
+
+  type    = string  
+
+  default = "us-east-2"  
+
+}  
+
+variable "my_instance_type" {  
+
+  type    = string  
+
+  default = "t2.micro"  
+
+}  
+
+variable "my_key" {  
+
+  description = "AWS EC2 Key pair that needs to be associated with EC2 Instance"  
+
+  type        = string  
+
+  default     = "terraform-server1-key"  
+
+}  
+
+variable "ingressrules" {  
+
+  type    = list(number)  
+
+  default = [22, 80, 443, 8080, 8090, 9000, 8081, 2479]  
+
+}  
+
+variable "egressrules" {  
+
+  type    = list(number)  
+
+  default = [25, 80, 443, 8080, 8090, 3306, 53]  
+
+}  
+
+41. Here is the output with double spaces and an extra line break after each line:
+
+```bash
+[ec2-user@terraform-server eks-server]$ terraform init  
+
+Initializing the backend...  
+
+Successfully configured the backend "s3"! Terraform will automatically  
+use this backend unless the backend configuration changes.  
+
+Initializing provider plugins...  
+
+- Finding hashicorp/aws versions matching "~> 4.0"...  
+
+- Installing hashicorp/aws v4.67.0...  
+
+- Installed hashicorp/aws v4.67.0 (signed by HashiCorp)  
+
+Terraform has created a lock file .terraform.lock.hcl to record the provider  
+selections it made above. Include this file in your version control repository  
+so that Terraform can guarantee to make the same selections by default when  
+you run "terraform init" in the future.  
+
+Terraform has been successfully initialized!  
+
+You may now begin working with Terraform. Try running "terraform plan" to see  
+any changes that are required for your infrastructure. All Terraform commands  
+should now work.  
+
+If you ever set or change modules or backend configuration for Terraform,  
+rerun this command to reinitialize your working directory. If you forget, other  
+commands will detect it and remind you to do so if necessary.  
+
+[ec2-user@terraform-server eks-server]$ terraform fmt  
+
+[ec2-user@terraform-server eks-server]$ terraform validate  
+
+Success! The configuration is valid.  
+
+[ec2-user@terraform-server eks-server]$ terraform plan  
+
+data.aws_ami.amazonlinux2: Reading...  
+
+data.aws_ami.amazonlinux2: Read complete after 1s [id=ami-0fa15516db7b1dc62]  
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the  
+following symbols:  
+  + create  
+
+Terraform will perform the following actions:  
+
+  # aws_instance.EKSServer will be created  
+  + resource "aws_instance" "EKSServer" {  
+      + ami                                  = "ami-0fa15516db7b1dc62"  
+      + arn                                  = (known after apply)  
+      + associate_public_ip_address          = (known after apply)  
+      + availability_zone                    = (known after apply)  
+      + cpu_core_count                       = (known after apply)  
+      + cpu_threads_per_core                 = (known after apply)  
+      + disable_api_stop                     = (known after apply)  
+      + disable_api_termination              = (known after apply)  
+      + ebs_optimized                        = (known after apply)  
+      + get_password_data                    = false  
+      + host_id                              = (known after apply)  
+      + host_resource_group_arn              = (known after apply)  
+      + iam_instance_profile                 = (known after apply)  
+      + id                                   = (known after apply)  
+      + instance_initiated_shutdown_behavior = (known after apply)  
+      + instance_state                       = (known after apply)  
+      + instance_type                        = "t2.micro"  
+      + ipv6_address_count                   = (known after apply)  
+      + ipv6_addresses                       = (known after apply)  
+      + key_name                             = "terraform-server1-key"  
+      + monitoring                           = (known after apply)  
+      + outpost_arn                          = (known after apply)  
+      + password_data                        = (known after apply)  
+      + placement_group                      = (known after apply)  
+      + placement_partition_number           = (known after apply)  
+      + primary_network_interface_id         = (known after apply)  
+      + private_dns                          = (known after apply)  
+      + private_ip                           = (known after apply)  
+      + public_dns                           = (known after apply)  
+      + public_ip                            = (known after apply)  
+      + secondary_private_ips                = (known after apply)  
+      + security_groups                      = (known after apply)  
+      + source_dest_check                    = true  
+      + subnet_id                            = (known after apply)  
+      + tags                                 = {  
+          + "Name" = "EKS-Server"  
+        }  
+      + tags_all                             = {  
+          + "Name" = "EKS-Server"  
+        }  
+      + tenancy                              = (known after apply)  
+      + user_data                            = (known after apply)  
+      + user_data_base64                     = (known after apply)  
+      + user_data_replace_on_change          = false  
+      + vpc_security_group_ids               = (known after apply)  
+
+      + capacity_reservation_specification (known after apply)  
+
+      + cpu_options (known after apply)  
+
+      + ebs_block_device (known after apply)  
+
+      + enclave_options (known after apply)  
+
+      + ephemeral_block_device (known after apply)  
+
+      + maintenance_options (known after apply)  
+
+      + metadata_options (known after apply)  
+
+      + network_interface (known after apply)  
+
+      + private_dns_name_options (known after apply)  
+
+      + root_block_device (known after apply)  
+    }  
+
+  # aws_security_group.web-traffic will be created  
+  + resource "aws_security_group" "web-traffic" {  
+      + arn                    = (known after apply)  
+      + description            = "Managed by Terraform"  
+      + egress                 = [  
+          + {  
+              + cidr_blocks      = [  
+                  + "0.0.0.0/0",  
+                ]  
+              + from_port        = 0  
+              + ipv6_cidr_blocks = []  
+              + prefix_list_ids  = []  
+              + protocol         = "-1"  
+              + security_groups  = []  
+              + self             = false  
+              + to_port          = 0  
+                # (1 unchanged attribute hidden)  
+            },  
+        ]  
+      + id                     = (known after apply)  
+      + ingress                = [  
+          + {  
+              + cidr_blocks      = [  
+                  + "0.0.0.0/0",  
+                ]  
+              + from_port        = 0  
+              + ipv6_cidr_blocks = []  
+              + prefix_list_ids  = []  
+              + protocol         = "-1"  
+              + security_groups  = []  
+              + self             = false  
+              + to_port          = 0  
+                # (1 unchanged attribute hidden)  
+            },  
+        ]  
+      + name                   = "My_Security_Group3"  
+      + name_prefix            = (known after apply)  
+      + owner_id               = (known after apply)  
+      + revoke_rules_on_delete = false  
+      + tags                   = {  
+          + "Name" = "My_SG3"  
+        }  
+      + tags_all               = {  
+          + "Name" = "My_SG3"  
+        }  
+      + vpc_id                 = (known after apply)  
+    }  
+
+Plan: 2 to add, 0 to change, 0 to destroy.  
+
+─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+
+Note: You didn't use the -out option to save this plan, so Terraform can't guarantee to take exactly these actions if you run  
+"terraform apply" now.  
+
+[ec2-user@terraform-server eks-server]$ terraform apply  
+
+data.aws_ami.amazonlinux2: Reading...  
+
+data.aws_ami.amazonlinux2: Read complete after 1s [id=ami-0fa15516db7b1dc62]  
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the  
+following symbols:  
+  + create  
+
+Terraform will perform the following actions:  
+
+  # aws_instance.EKSServer will be created  
+  + resource "aws_instance" "EKSServer" {  
+      + ami                                  = "ami-0fa15516db7b1dc62"  
+      + arn                                  = (known after apply)  
+      + associate_public_ip_address          = (known after apply)  
+      + availability_zone                    = (known after apply)  
+      + cpu_core_count                       = (known after apply)  
+      + cpu_threads_per_core                 = (known after apply)  
+      + disable_api_stop                     = (known after apply)  
+      + disable_api_termination              = (known after apply)  
+      + ebs_optimized                        = (known after apply)  
+      + get_password_data                    = false  
+      + host_id                              = (known after apply)  
+      + host_resource_group_arn              = (known after apply)  
+      + iam_instance_profile                 = (known after apply)  
+      + id                                   = (known after apply)  
+      + instance_initiated_shutdown_behavior = (known after apply)  
+      + instance_state                       = (known after apply)  
+      + instance_type                        = "t2.micro"  
+      + ipv6_address_count                   = (known after apply)  
+      + ipv6_addresses                       = (known after apply)  
+      + key_name                             = "terraform-server1-key"  
+      + monitoring                           = (known after apply)  
+      + outpost_arn                          = (known after apply)  
+      + password_data                        = (known after apply)  
+      + placement_group                      = (known after apply)  
+      + placement_partition_number           = (known after apply)  
+      + primary_network_interface_id         = (known after apply)  
+      + private_dns                          = (known after apply)  
+      + private_ip                           = (known after apply)  
+      + public_dns                           = (known after apply)  
+      + public_ip                            = (known after apply)  
+      + secondary_private_ips                = (known after apply)  
+      + security_groups                      =
+
+ (known after apply)  
+      + source_dest_check                    = true  
+      + subnet_id                            = (known after apply)  
+      + tags                                 = {  
+          + "Name" = "EKS-Server"  
+        }  
+      + tags_all                             = {  
+          + "Name" = "EKS-Server"  
+        }  
+      + tenancy                              = (known after apply)  
+      + user_data                            = (known after apply)  
+      + user_data_base64                     = (known after apply)  
+      + user_data_replace_on_change          = false  
+      + vpc_security_group_ids               = (known after apply)  
+
+      + capacity_reservation_specification (known after apply)  
+
+      + cpu_options (known after apply)  
+
+      + ebs_block_device (known after apply)  
+
+      + enclave_options (known after apply)  
+
+      + ephemeral_block_device (known after apply)  
+
+      + maintenance_options (known after apply)  
+
+      + metadata_options (known after apply)  
+
+      + network_interface (known after apply)  
+
+      + private_dns_name_options (known after apply)  
+
+      + root_block_device (known after apply)  
+    }  
+
+  # aws_security_group.web-traffic will be created  
+  + resource "aws_security_group" "web-traffic" {  
+      + arn                    = (known after apply)  
+      + description            = "Managed by Terraform"  
+      + egress                 = [  
+          + {  
+              + cidr_blocks      = [  
+                  + "0.0.0.0/0",  
+                ]  
+              + from_port        = 0  
+              + ipv6_cidr_blocks = []  
+              + prefix_list_ids  = []  
+              + protocol         = "-1"  
+              + security_groups  = []  
+              + self             = false  
+              + to_port          = 0  
+                # (1 unchanged attribute hidden)  
+            },  
+        ]  
+      + id                     = (known after apply)  
+      + ingress                = [  
+          + {  
+              + cidr_blocks      = [  
+                  + "0.0.0.0/0",  
+                ]  
+              + from_port        = 0  
+              + ipv6_cidr_blocks = []  
+              + prefix_list_ids  = []  
+              + protocol         = "-1"  
+              + security_groups  = []  
+              + self             = false  
+              + to_port          = 0  
+                # (1 unchanged attribute hidden)  
+            },  
+        ]  
+      + name                   = "My_Security_Group3"  
+      + name_prefix            = (known after apply)  
+      + owner_id               = (known after apply)  
+      + revoke_rules_on_delete = false  
+      + tags                   = {  
+          + "Name" = "My_SG3"  
+        }  
+      + tags_all               = {  
+          + "Name" = "My_SG3"  
+        }  
+      + vpc_id                 = (known after apply)  
+    }  
+
+Plan: 2 to add, 0 to change, 0 to destroy.  
+
+Do you want to perform these actions?  
+  Terraform will perform the actions described above.  
+  Only 'yes' will be accepted to approve.  
+
+  Enter a value: yes  
+
+aws_security_group.web-traffic: Creating...  
+
+aws_security_group.web-traffic: Creation complete after 2s [id=sg-0feed4719b49d2832]  
+
+aws_instance.EKSServer: Creating...  
+
+aws_instance.EKSServer: Still creating... [10s elapsed]  
+
+aws_instance.EKSServer: Creation complete after 12s [id=i-0d5bd172cf0964e63]  
+
+Apply complete! Resources: 2 added, 0 changed, 0 destroyed.  
+
+[ec2-user@terraform-server eks-server]$  
+
+42. ssh to eks -server using ip address   
+Change hostname from ip-172-31-23-205.us-east-2.compute.internal to EKS-Server  
+[ec2-user@ip-172-31-23-205 ~]$ sudo vi /etc/hostname  
+[ec2-user@ip-172-31-23-205 ~]$ cat /etc/hostname  
+EKS-Server  
+[ec2-user@ip-172-31-23-205 ~]$ sudo init 6  <---- reboot restart command   
+43. PROVISION EKS CLUSTER USING EKSCTL   
+ 
+
+**sudo su** 	Switches to root user without a login shell	Retains the current user's environment (working directory, environment variables, etc.)   
+**sudo su -** 	Switches to root user with a login shell (- simulates a full login)	Resets the environment to that of root (changes working directory to /root, sources root's login configurations)  
+INstall kubectl  
+give exec permission  
+[root@EKS-Server ~]# curl -O https://s3.us-west-2.amazonaws.com/amazon-eks/1.27.1/2023-04-19/bin/linux/amd64/kubectl   
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100 46.9M  100 46.9M    0     0  10.7M      0  0:00:04  0:00:04 --:--:-- 10.7M  
+[root@EKS-Server ~]# chmod +x ./kubectl  
+[root@EKS-Server ~]# ls    
+kubectl  
+[root@EKS-Server ~]# ll  
+total 48092  
+-rwxr-xr-x 1 root root 49246208 Nov  7 09:48 kubectl  
+[root@EKS-Server ~]# mv kubectl /bin   
+[root@EKS-Server ~]# ls /bin | grep kubectl    
+kubectl      
+[root@EKS-Server ~]# kubectl version         
+WARNING: This version information is deprecated and will be replaced with the output from kubectl version --short.  Use --output=yaml|json to get the full version.      
+Client Version: version.Info{Major:"1", Minor:"27+", GitVersion:"v1.27.1-eks-2f008fe", GitCommit:"abfec7d7e55d56346a5259c9379dea9f56ba2926", GitTreeState:"clean", BuildDate:"2023-04-14T20:43:13Z", GoVersion:"go1.20.3", Compiler:"gc", Platform:"linux/amd64"}
+Kustomize Version: v5.0.1    
+The connection to the server localhost:8080 was refused - did you specify the right host or port?    
+INSTALL EKSCTL  
+[root@EKS-Server ~]# **curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp**       
+[root@EKS-Server ~]# **cd /tmp**      
+[root@EKS-Server tmp]# **sudo mv /tmp/eksctl /bin**    
+[root@EKS-Server tmp]# **eksctl version**          
+0.194.0      
+[root@EKS-Server tmp]#    
+
+
+
+
+
 
 
 
